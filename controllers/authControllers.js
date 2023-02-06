@@ -12,7 +12,6 @@ exports.login = async (req, res, next) => {
 
   try {
     const user = await usersModel.findOne({ username });
-    // console.log(user);
     if (user && user.password === password) {
       // generate access token & refresh token
       const accessToken = generateAccessToken(user);
