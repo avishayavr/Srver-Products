@@ -7,11 +7,13 @@ require("./config/database");
 app.use(cors());
 app.use(express.json());
 
+const authRouter = require("./routers/authRouter")
 const productsRouter = require("./routers/productsRouter");
 const usersRouter = require("./routers/usersRouter");
 const stripeRouter = require("./routers/stripeRouter")
 
 
+app.use("/api/auth", authRouter);
 app.use("/api/products", productsRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/stripe", stripeRouter);

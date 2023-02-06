@@ -1,7 +1,7 @@
 const productsModel = require("../models/productsModel");
 
 // function for getting data
-const getAllData = async (req, res, next) => {
+exports.getAllData = async (req, res, next) => {
   try {
     const products = await productsModel.find({});
     // console.log(products);
@@ -12,7 +12,7 @@ const getAllData = async (req, res, next) => {
 };
 
 // function to getting data by id
-const getDataById = async (req, res, next) => {
+exports.getDataById = async (req, res, next) => {
   const { id } = req.params;
   try {
     // if (req.product._id === req.params.id){
@@ -26,7 +26,7 @@ const getDataById = async (req, res, next) => {
 };
 
 // function to create item
-const createProduct = async (req, res, next) => {
+exports.createProduct = async (req, res, next) => {
   const obj = req.body;
   try {
     const newProduct = new productsModel({
@@ -43,7 +43,7 @@ const createProduct = async (req, res, next) => {
 };
 
 // function to update item
-const updateProduct = async (req, res, next) => {
+exports.updateProduct = async (req, res, next) => {
   const obj = req.body;
   const { id } = req.params;
   try {
@@ -58,7 +58,7 @@ const updateProduct = async (req, res, next) => {
 };
 
 // function to delete product
-const deleteProduct = async (req, res, next) => {
+exports.deleteProduct = async (req, res, next) => {
   const {id} = req.params
   try {
     // if (req.product._id === id) {
@@ -71,10 +71,4 @@ const deleteProduct = async (req, res, next) => {
   }
 };
 
-module.exports = {
-  getAllData,
-  getDataById,
-  createProduct,
-  updateProduct,
-  deleteProduct,
-};
+
