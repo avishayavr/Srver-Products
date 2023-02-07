@@ -1,5 +1,4 @@
 const jwt = require("jsonwebtoken");
-
 require("dotenv").config();
 
 // function to generate access token
@@ -8,7 +7,7 @@ exports.generateAccessToken = (user) => {
     { id: user.id, isAdmin: user.isAdmin },
     process.env.ACCESS_TOKEN_KEY,
     {
-      expiresIn: "40s",
+      expiresIn: "10m",
     }
   );
 };
