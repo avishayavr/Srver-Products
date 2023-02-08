@@ -1,12 +1,10 @@
 const usersModel = require("../models/usersModel");
-const tokensModel = require("../models/refreshModel");
 const {
   generateAccessToken,
   generateRefreshAccessToken,
 } = require("../middleware/authMiddleware");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
-let refreshTokens = [];
 
 // function to refresh token
 exports.refreshAccessToken = async (req, res, next) => {
@@ -15,22 +13,32 @@ exports.refreshAccessToken = async (req, res, next) => {
 
   // send error if there is no token or its invalid
   if (!refreshToken) return res.status(401).json("you are not authenticated!");
-  if (!refreshTokens.includes(refreshToken))
-    return res.status(403).json("refresh token is not valid");
 
   try {
+    // get the user
+    const currentUser = await usersModel.findById(req.params.id);
+    if (!currentUser.refreshToken.includes(refreshToken))
+      return res.status(403).json("refresh token is not valid");
+
     jwt.verify(
       refreshToken,
       process.env.ACCESS_REFRESH_TOKEN_KEY,
-      (err, user) => {
+      async (err, user) => {
         err && console.log(err);
 
-        refreshTokens = refreshTokens.filter((token) => token !== refreshToken);
+        console.log(currentUser);
+        //  deleting the current refresh token
+        currentUser.refreshToken = currentUser.refreshToken.filter(
+          (token) => token !== refreshToken
+        );
 
         // generate access token & refresh token
         const newAccessToken = generateAccessToken(user);
         const newRefreshToken = generateRefreshAccessToken(user);
-        refreshTokens.push(newRefreshToken);
+
+        // updating the data
+        currentUser.refreshToken.push(newRefreshToken);
+        await usersModel.findByIdAndUpdate(currentUser._id, currentUser);
 
         res.status(200).json({
           accessToken: newAccessToken,
@@ -42,7 +50,6 @@ exports.refreshAccessToken = async (req, res, next) => {
     next(error);
   }
 };
-
 
 // function to log in
 exports.login = async (req, res, next) => {
@@ -58,9 +65,9 @@ exports.login = async (req, res, next) => {
       const accessToken = generateAccessToken(user);
       const refreshToken = generateRefreshAccessToken(user);
 
-      // const newRefreshToken = new tokensModel(refreshToken);
-      // await newRefreshToken.save();
-      refreshTokens.push(refreshToken);
+      //  adding refresh token to the user data
+      user.refreshToken.push(refreshToken);
+      await usersModel.findByIdAndUpdate(user._id, user);
 
       res.json({
         username: user.username,
@@ -77,14 +84,19 @@ exports.login = async (req, res, next) => {
 };
 
 // function to log out
-exports.logout = async(req, res, next)=>{
-  console.log(refreshTokens);
+exports.logout = async (req, res, next) => {
   const refreshToken = req.body.token;
   try {
-    refreshTokens = refreshTokens.filter((token)=>token !== refreshToken);
-    console.log(refreshTokens);
+    // get the user
+    const currentUser = await usersModel.findById(req.params.id);
+
+    // deleting the tokens and updating the data
+    currentUser.refreshToken = currentUser.refreshToken.filter(
+      (token) => token !== refreshToken
+    );
+    await usersModel.findByIdAndUpdate(currentUser._id, currentUser);
     res.status(200).json("user logged out");
   } catch (error) {
     next(error);
   }
-}
+};
