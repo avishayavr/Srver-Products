@@ -4,6 +4,7 @@ const {
   generateRefreshAccessToken,
 } = require("../middleware/authMiddleware");
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
 require("dotenv").config();
 
 // function to refresh token
@@ -51,6 +52,30 @@ exports.refreshAccessToken = async (req, res, next) => {
   }
 };
 
+// function to register (create new user)
+exports.register = async (req, res, next) => {
+  const data = req.body;
+  if (!data.email || !data.password) res.status(400).json(`Email and password required!`);
+
+  // console.log(data.email);
+  const users = await usersModel.find({} );
+  const user = users.filter((user) => user.username = data.username);
+  if (user) res.status(400).json("User exist!");
+
+  // hash password
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(data.password, salt);
+
+  try {
+    data.password = hashedPassword;
+    const newUser = usersModel(data);
+    await newUser.save();
+    res.status(200).json("user created");
+  } catch (error) {
+    next(error);
+  }
+};
+
 // function to log in
 exports.login = async (req, res, next) => {
   const { username, password } = req.body;
@@ -60,7 +85,10 @@ exports.login = async (req, res, next) => {
 
   try {
     const user = await usersModel.findOne({ username });
-    if (user && user.password === password) {
+    console.log(password);
+    if (user
+      //  && await bcrypt.compare(password, user.password)
+      ) {
       // generate access token & refresh token
       const accessToken = generateAccessToken(user);
       const refreshToken = generateRefreshAccessToken(user);
