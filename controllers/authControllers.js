@@ -85,9 +85,8 @@ exports.login = async (req, res, next) => {
 
   try {
     const user = await usersModel.findOne({ username });
-    console.log(password);
-    if (user
-      //  && await bcrypt.compare(password, user.password)
+    console.log(await bcrypt.compare(password, user.password));
+    if (user && await bcrypt.compare(password, user.password)
       ) {
       // generate access token & refresh token
       const accessToken = generateAccessToken(user);
