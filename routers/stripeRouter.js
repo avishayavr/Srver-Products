@@ -27,7 +27,7 @@ router.post("/create-checkout-session", async (req, res) => {
   const session = await stripe.checkout.sessions.create({
     line_items,
     mode: "payment",
-    success_url: "http://localhost:3000/checkoutSuccess",
+    success_url: "https://anime-products.vercel.app/checkoutSuccess",
     cancel_url: "http://localhost:3000",
   });
 
